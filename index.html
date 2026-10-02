@@ -1,0 +1,429 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Software Effort & Cost Estimation Tool</title>
+  <style>
+    :root {
+      --primary: #1f3c88;
+      --secondary: #070d59;
+      --accent: #ee6f57;
+      --bg: #f6f7fb;
+      --card-bg: #ffffff;
+      --text: #333333;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: var(--secondary);
+      margin-bottom: 20px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background-color: #dbe2ef;
+      color: var(--secondary);
+      font-weight: bold;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .tab-btn.active {
+      background-color: var(--card-bg);
+      border-top: 4px solid var(--accent);
+      color: var(--accent);
+    }
+    .card {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      display: none;
+    }
+    .card.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th, td {
+      border: 1px solid #e1e4e8;
+      padding: 8px 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #f1f3f9;
+      color: var(--secondary);
+    }
+    .form-group {
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    label {
+      font-weight: 500;
+    }
+    input[type="number"], select {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 150px;
+      box-sizing: border-box;
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button.calc {
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    button.reset {
+      background-color: #e0e0e0;
+      color: #333;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .results {
+      margin-top: 20px;
+      background: #eef7ee;
+      border: 1px solid #c2e2c2;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .results p {
+      margin: 6px 0;
+      font-weight: bold;
+      color: #275629;
+    }
+    .gsc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 768px) {
+      .gsc-grid { grid-template-columns: 1fr; }
+      .form-group { flex-direction: column; align-items: flex-start; }
+      input[type="number"], select { width: 100%; margin-top: 5px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>حاسبة تكلفة وجهد البرمجيات (Software Effort Tool)</h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('fp')">Function Point (FP)</button>
+    <button class="tab-btn" onclick="switchTab('sloc')">SLOC Technique</button>
+    <button class="tab-btn" onclick="switchTab('cocomo')">Basic COCOMO</button>
+  </div>
+
+  <!-- TAB 1: FP -->
+  <div id="tab-fp" class="card active">
+    <h3>1. قياس المعايير الخمسة (Measurement Parameters)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>المعيار</th>
+          <th>العدد (Count)</th>
+          <th>مستوى التعقيد</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>User Inputs</td>
+          <td><input type="number" id="inp-count" value="0" min="0"></td>
+          <td>
+            <select id="inp-comp">
+              <option value="3">بسيط (Simple - 3)</option>
+              <option value="4" selected>متوسط (Average - 4)</option>
+              <option value="6">معقد (Complex - 6)</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>User Outputs</td>
+          <td><input type="number" id="out-count" value="0" min="0"></td>
+          <td>
+            <select id="out-comp">
+              <option value="4">بسيط (Simple - 4)</option>
+              <option value="5" selected>متوسط (Average - 5)</option>
+              <option value="7">معقد (Complex - 7)</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>User Inquiries</td>
+          <td><input type="number" id="inq-count" value="0" min="0"></td>
+          <td>
+            <select id="inq-comp">
+              <option value="3">بسيط (Simple - 3)</option>
+              <option value="4" selected>متوسط (Average - 4)</option>
+              <option value="6">معقد (Complex - 6)</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Internal Files</td>
+          <td><input type="number" id="files-count" value="0" min="0"></td>
+          <td>
+            <select id="files-comp">
+              <option value="7">بسيط (Simple - 7)</option>
+              <option value="10" selected>متوسط (Average - 10)</option>
+              <option value="15">معقد (Complex - 15)</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>External Interfaces</td>
+          <td><input type="number" id="ext-count" value="0" min="0"></td>
+          <td>
+            <select id="ext-comp">
+              <option value="5">بسيط (Simple - 5)</option>
+              <option value="7" selected>متوسط (Average - 7)</option>
+              <option value="10">معقد (Complex - 10)</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>2. خصائص النظام العامة (GSC - 14 Factors) [من 0 إلى 5]</h3>
+    <div class="gsc-grid" id="gsc-container"></div>
+
+    <h3 style="margin-top:20px;">3. اختيار لغة البرمجة لحساب أسطر الكود (LOC)</h3>
+    <div class="form-group">
+      <label>لغة البرمجة (Language):</label>
+      <select id="fp-lang">
+        <option value="128">C (128 LOC/FP)</option>
+        <option value="64">C++ (64 LOC/FP)</option>
+        <option value="30" selected>Object-Oriented / Java (30 LOC/FP)</option>
+        <option value="32">Visual Basic (32 LOC/FP)</option>
+        <option value="12">SQL / Oracle (12 LOC/FP)</option>
+        <option value="105">COBOL / Fortran (105 LOC/FP)</option>
+        <option value="320">Assembly (320 LOC/FP)</option>
+      </select>
+    </div>
+
+    <div class="btn-group">
+      <button class="calc" onclick="calculateFP()">احسب (Calculate)</button>
+      <button class="reset" onclick="resetFP()">إعادة تعيين (Reset)</button>
+    </div>
+
+    <div class="results" id="fp-results" style="display:none;">
+      <p>Count Total (CT): <span id="res-ct"></span></p>
+      <p>Total Weighting Factor (ΣFi): <span id="res-fi"></span></p>
+      <p>Total Function Points (FP): <span id="res-fp"></span></p>
+      <p>Estimated Lines of Code (LOC): <span id="res-loc"></span></p>
+    </div>
+  </div>
+
+  <!-- TAB 2: SLOC -->
+  <div id="tab-sloc" class="card">
+    <h3>تقدير الجهد عبر أسطر الكود (SLOC Technique)</h3>
+    <div class="form-group">
+      <label>حجم الكود الإجمالي (Total LOC):</label>
+      <input type="number" id="sloc-loc" value="33200">
+    </div>
+    <div class="form-group">
+      <label>الإنتاجية (LOC / Person-Month):</label>
+      <input type="number" id="sloc-prod" value="620">
+    </div>
+    <div class="form-group">
+      <label>عدد المطورين (Number of Developers):</label>
+      <input type="number" id="sloc-devs" value="6">
+    </div>
+    <div class="form-group">
+      <label>تكلفة الفرد في الشهر (Labor Rate $):</label>
+      <input type="number" id="sloc-rate" value="800">
+    </div>
+
+    <div class="btn-group">
+      <button class="calc" onclick="calculateSLOC()">احسب (Calculate)</button>
+      <button class="reset" onclick="resetSLOC()">إعادة تعيين (Reset)</button>
+    </div>
+
+    <div class="results" id="sloc-results" style="display:none;">
+      <p>إجمالي الجهد (Total Effort): <span id="res-sloc-effort"></span> Person-Months</p>
+      <p>المدة بالشهور (Duration): <span id="res-sloc-time"></span> Months</p>
+      <p>التكلفة التقديرية الكلية (Total Cost): $<span id="res-sloc-cost"></span></p>
+    </div>
+  </div>
+
+  <!-- TAB 3: COCOMO -->
+  <div id="tab-cocomo" class="card">
+    <h3>نموذج كوكومو الأساسي (Basic COCOMO)</h3>
+    <div class="form-group">
+      <label>حجم النظام بآلاف الأسطر (KLOC):</label>
+      <input type="number" id="cocomo-kloc" value="4" step="0.1">
+    </div>
+    <div class="form-group">
+      <label>نوع المشروع (Project Mode):</label>
+      <select id="cocomo-mode">
+        <option value="organic">Organic (C=3.2, K=1.05)</option>
+        <option value="semidetached">Semi-Detached (C=3.0, K=1.12)</option>
+        <option value="embedded">Embedded (C=2.8, K=1.20)</option>
+      </select>
+    </div>
+
+    <div class="btn-group">
+      <button class="calc" onclick="calculateCOCOMO()">احسب (Calculate)</button>
+      <button class="reset" onclick="resetCOCOMO()">إعادة تعيين (Reset)</button>
+    </div>
+
+    <div class="results" id="cocomo-results" style="display:none;">
+      <p>الجهد المطلوب (Effort Ei): <span id="res-cocomo-effort"></span> Person-Months</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 14 GSC labels
+  const gscNames = [
+    "1. Backup and Recovery", "2. Data Communications", "3. Distributed Processing",
+    "4. Performance Critical", "5. Heavily Utilized Env", "6. Online Data Entry",
+    "7. Multi-screen Entry", "8. Master Files Updated Online", "9. Complex Inputs/Outputs",
+    "10. Complex Processing", "11. Reusable Code", "12. Installation Ease",
+    "13. Multiple Sites", "14. Facilitate Change"
+  ];
+
+  const gscContainer = document.getElementById("gsc-container");
+  gscNames.forEach((name, i) => {
+    const div = document.createElement("div");
+    div.className = "form-group";
+    div.innerHTML = `
+      <label style="font-size:13px;">${name}:</label>
+      <input type="number" id="gsc-${i}" min="0" max="5" value="0">
+    `;
+    gscContainer.appendChild(div);
+  });
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+    
+    if (tabId === 'fp') {
+      document.querySelectorAll('.tab-btn')[0].classList.add('active');
+      document.getElementById('tab-fp').classList.add('active');
+    } else if (tabId === 'sloc') {
+      document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      document.getElementById('tab-sloc').classList.add('active');
+    } else {
+      document.querySelectorAll('.tab-btn')[2].classList.add('active');
+      document.getElementById('tab-cocomo').classList.add('active');
+    }
+  }
+
+  // FP Logic
+  function calculateFP() {
+    const ct = 
+      (Number(document.getElementById('inp-count').value) * Number(document.getElementById('inp-comp').value)) +
+      (Number(document.getElementById('out-count').value) * Number(document.getElementById('out-comp').value)) +
+      (Number(document.getElementById('inq-count').value) * Number(document.getElementById('inq-comp').value)) +
+      (Number(document.getElementById('files-count').value) * Number(document.getElementById('files-comp').value)) +
+      (Number(document.getElementById('ext-count').value) * Number(document.getElementById('ext-comp').value));
+
+    let sumFi = 0;
+    for (let i = 0; i < 14; i++) {
+      sumFi += Number(document.getElementById(`gsc-${i}`).value) || 0;
+    }
+
+    const fp = ct * (0.65 + (0.01 * sumFi));
+    const locPerFp = Number(document.getElementById('fp-lang').value);
+    const loc = fp * locPerFp;
+
+    document.getElementById('res-ct').innerText = ct;
+    document.getElementById('res-fi').innerText = sumFi;
+    document.getElementById('res-fp').innerText = fp.toFixed(2);
+    document.getElementById('res-loc').innerText = Math.round(loc).toLocaleString();
+    document.getElementById('fp-results').style.display = 'block';
+  }
+
+  function resetFP() {
+    ['inp-count','out-count','inq-count','files-count','ext-count'].forEach(id => document.getElementById(id).value = 0);
+    for (let i = 0; i < 14; i++) document.getElementById(`gsc-${i}`).value = 0;
+    document.getElementById('fp-results').style.display = 'none';
+  }
+
+  // SLOC Logic
+  function calculateSLOC() {
+    const loc = Number(document.getElementById('sloc-loc').value) || 0;
+    const prod = Number(document.getElementById('sloc-prod').value) || 1;
+    const devs = Number(document.getElementById('sloc-devs').value) || 1;
+    const rate = Number(document.getElementById('sloc-rate').value) || 0;
+
+    const effort = loc / prod;
+    const duration = effort / devs;
+    const cost = effort * rate;
+
+    document.getElementById('res-sloc-effort').innerText = effort.toFixed(2);
+    document.getElementById('res-sloc-time').innerText = duration.toFixed(2);
+    document.getElementById('res-sloc-cost').innerText = Math.round(cost).toLocaleString();
+    document.getElementById('sloc-results').style.display = 'block';
+  }
+
+  function resetSLOC() {
+    document.getElementById('sloc-loc').value = '';
+    document.getElementById('sloc-prod').value = '';
+    document.getElementById('sloc-devs').value = '';
+    document.getElementById('sloc-rate').value = '';
+    document.getElementById('sloc-results').style.display = 'none';
+  }
+
+  // COCOMO Logic
+  function calculateCOCOMO() {
+    const kloc = Number(document.getElementById('cocomo-kloc').value) || 0;
+    const mode = document.getElementById('cocomo-mode').value;
+    
+    let c = 3.2, k = 1.05;
+    if (mode === 'semidetached') { c = 3.0; k = 1.12; }
+    else if (mode === 'embedded') { c = 2.8; k = 1.20; }
+
+    const effort = c * Math.pow(kloc, k);
+
+    document.getElementById('res-cocomo-effort').innerText = effort.toFixed(2);
+    document.getElementById('cocomo-results').style.display = 'block';
+  }
+
+  function resetCOCOMO() {
+    document.getElementById('cocomo-kloc').value = '';
+    document.getElementById('cocomo-results').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
